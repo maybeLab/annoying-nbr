@@ -1,0 +1,307 @@
+:root {
+  color-scheme: light;
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  background: #f4f6f8;
+  color: #18202a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 760px;
+  background: #f4f6f8;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+button {
+  border: 1px solid #bac4cf;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #18202a;
+  cursor: pointer;
+  min-height: 36px;
+  padding: 0 14px;
+}
+
+button:hover:not(:disabled) {
+  border-color: #53677d;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.app {
+  display: grid;
+  gap: 18px;
+  padding: 24px;
+}
+
+.toolbar {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.toolbar h1 {
+  font-size: 26px;
+  line-height: 1.2;
+  margin: 0 0 6px;
+}
+
+.toolbar p {
+  color: #586777;
+  margin: 0;
+  max-width: 620px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.toolbar-actions,
+.player-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.settings {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) 150px 150px;
+  gap: 16px;
+}
+
+label {
+  display: grid;
+  gap: 8px;
+}
+
+label span {
+  color: #586777;
+  font-size: 13px;
+}
+
+select,
+input {
+  border: 1px solid #bac4cf;
+  border-radius: 6px;
+  height: 38px;
+  padding: 0 10px;
+  width: 100%;
+}
+
+.settings-toggles {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 18px;
+  grid-column: 1 / -1;
+}
+
+.checkbox-control {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+}
+
+.checkbox-control input {
+  height: 16px;
+  margin: 0;
+  width: 16px;
+}
+
+.checkbox-control span {
+  color: #203040;
+  font-size: 14px;
+  line-height: 16px;
+}
+
+.content {
+  display: grid;
+  grid-template-columns: minmax(280px, 380px) minmax(0, 1fr);
+  gap: 18px;
+  min-height: 420px;
+}
+
+.file-panel,
+.player-panel {
+  background: #ffffff;
+  border: 1px solid #d9e0e7;
+  border-radius: 8px;
+}
+
+.file-panel {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  overflow: hidden;
+}
+
+.panel-header {
+  align-items: center;
+  border-bottom: 1px solid #e3e8ee;
+  display: flex;
+  justify-content: space-between;
+  padding: 14px 16px;
+}
+
+.panel-header h2 {
+  font-size: 16px;
+  margin: 0;
+}
+
+.panel-header span {
+  color: #586777;
+}
+
+.file-list {
+  overflow: auto;
+  padding: 8px;
+}
+
+.file-item {
+  border-color: transparent;
+  border-radius: 6px;
+  display: block;
+  min-height: 34px;
+  overflow-wrap: anywhere;
+  padding: 8px 10px;
+  text-align: left;
+  width: 100%;
+}
+
+.file-item.is-selected {
+  background: #dceef2;
+  border-color: #73aeb9;
+}
+
+.file-item.is-current {
+  border-color: #203040;
+  box-shadow: inset 3px 0 0 #203040;
+}
+
+.empty {
+  color: #687786;
+  padding: 16px;
+}
+
+.player-panel {
+  align-content: start;
+  display: grid;
+  gap: 18px;
+  padding: 24px;
+}
+
+.now-playing {
+  display: grid;
+  gap: 8px;
+}
+
+.now-playing span,
+.status-row {
+  color: #586777;
+  font-size: 13px;
+}
+
+.now-playing strong {
+  font-size: 18px;
+  overflow-wrap: anywhere;
+}
+
+audio {
+  width: 100%;
+}
+
+.playback-controls {
+  display: grid;
+  gap: 14px;
+}
+
+.volume-control,
+.rate-control {
+  display: grid;
+  gap: 8px;
+}
+
+.volume-control span,
+.rate-control > span {
+  color: #586777;
+  font-size: 13px;
+}
+
+.range-row {
+  align-items: center;
+  display: grid;
+  grid-template-columns: minmax(160px, 1fr) 48px;
+  gap: 10px;
+}
+
+input[type='range'] {
+  accent-color: #2e7d8b;
+  height: 24px;
+  padding: 0;
+}
+
+output {
+  color: #203040;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.rate-buttons {
+  background: #eef2f5;
+  border: 1px solid #d9e0e7;
+  border-radius: 8px;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 2px;
+  padding: 3px;
+}
+
+.rate-buttons button {
+  border-color: transparent;
+  border-radius: 5px;
+  min-height: 32px;
+  padding: 0 4px;
+}
+
+.rate-buttons button.is-selected {
+  background: #203040;
+  color: #ffffff;
+}
+
+.progress {
+  background: #e3e8ee;
+  border-radius: 999px;
+  height: 10px;
+  overflow: hidden;
+}
+
+#progressBar {
+  background: #2e7d8b;
+  height: 100%;
+  transition: width 160ms linear;
+  width: 0%;
+}
+
+.status-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.player-actions button:first-child {
+  background: #203040;
+  border-color: #203040;
+  color: #ffffff;
+}

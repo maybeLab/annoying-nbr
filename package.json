@@ -1,0 +1,114 @@
+{
+  "name": "annoying-nbr",
+  "version": "1.0.0",
+  "description": "Cross-platform desktop audio loop player with output device selection.",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "check": "node --check src/main.js && node --check src/preload.js && node --check src/renderer.js",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder",
+    "dist:mac": "electron-builder --mac",
+    "dist:win": "electron-builder --win",
+    "dist:linux": "electron-builder --linux",
+    "dist:all": "electron-builder --mac --win --linux"
+  },
+  "keywords": [
+    "audio",
+    "loop",
+    "speaker",
+    "macos",
+    "windows"
+  ],
+  "author": {
+    "name": "Annoying NBR",
+    "email": "shoyuf@shoyuf.top"
+  },
+  "homepage": "https://github.com/maybeLab/annoying-nbr",
+  "license": "MIT",
+  "packageManager": "pnpm@10.0.0",
+  "devDependencies": {
+    "electron": "^30.5.1",
+    "electron-builder": "^24.13.3"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "build": {
+    "appId": "com.annoying.nbr",
+    "productName": "Annoying NBR",
+    "asar": true,
+    "icon": "icon.png",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "icon.png",
+      "package.json"
+    ],
+    "mac": {
+      "category": "public.app-category.music",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ]
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "linux": {
+      "category": "Audio",
+      "maintainer": "Annoying NBR <shoyuf@shoyuf.top>",
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "deb",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "electron"
+    ]
+  }
+}

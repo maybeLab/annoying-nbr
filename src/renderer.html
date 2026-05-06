@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Annoying NBR</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <section class="toolbar">
+        <div>
+          <h1>Annoying NBR</h1>
+          <p id="scanRoot">正在读取目录...</p>
+        </div>
+        <div class="toolbar-actions">
+          <button id="chooseDirButton" type="button">选择目录</button>
+          <button id="rescanButton" type="button">重新扫描</button>
+        </div>
+      </section>
+
+      <section class="settings">
+        <label>
+          <span>扬声器</span>
+          <select id="deviceSelect">
+            <option value="">系统默认输出设备</option>
+          </select>
+        </label>
+
+        <label>
+          <span>循环播放时长</span>
+          <input id="durationInput" type="number" min="1" step="1" value="7200" />
+        </label>
+
+        <label>
+          <span>循环播放间隔</span>
+          <input id="intervalInput" type="number" min="0" step="1" value="0" />
+        </label>
+
+        <div class="settings-toggles">
+          <label class="checkbox-control">
+            <input id="randomIntervalInput" type="checkbox" />
+            <span>增加随机间隔</span>
+          </label>
+
+          <label class="checkbox-control">
+            <input id="randomPlaybackInput" type="checkbox" />
+            <span>随机循环播放</span>
+          </label>
+        </div>
+      </section>
+
+      <section class="content">
+        <aside class="file-panel">
+          <div class="panel-header">
+            <h2>音频文件</h2>
+            <span id="fileCount">0</span>
+          </div>
+          <div id="fileList" class="file-list"></div>
+        </aside>
+
+        <section class="player-panel">
+          <div class="now-playing">
+            <span>当前选择</span>
+            <strong id="selectedFileName">未选择音频</strong>
+          </div>
+
+          <audio id="audio"></audio>
+
+          <div class="playback-controls">
+            <label class="volume-control">
+              <span>音量</span>
+              <div class="range-row">
+                <input id="volumeInput" type="range" min="0" max="100" step="1" value="100" />
+                <output id="volumeValue">100%</output>
+              </div>
+            </label>
+
+            <div class="rate-control">
+              <span>倍速</span>
+              <div id="rateButtons" class="rate-buttons">
+                <button type="button" data-rate="0.5">0.5x</button>
+                <button type="button" data-rate="0.75">0.75x</button>
+                <button type="button" data-rate="1">1x</button>
+                <button type="button" data-rate="1.25">1.25x</button>
+                <button type="button" data-rate="1.5">1.5x</button>
+                <button type="button" data-rate="2">2x</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="progress">
+            <div id="progressBar"></div>
+          </div>
+
+          <div class="status-row">
+            <span id="statusText">请选择音频后开始播放</span>
+            <span id="timeText">0s / 7200s</span>
+          </div>
+
+          <div class="player-actions">
+            <button id="playButton" type="button" disabled>开始循环播放</button>
+            <button id="stopButton" type="button" disabled>停止</button>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script src="./renderer.js"></script>
+  </body>
+</html>
