@@ -1,6 +1,8 @@
 # Annoying NBR
 
-一个 macOS / Windows 通用的 Node.js 桌面循环播放器，基于 Electron。
+![Annoying NBR 应用截图](docs/screenshot.png)
+
+一个 macOS / Windows / Linux 通用的 Node.js 桌面循环播放器，基于 Electron。
 
 运行后会依次完成：
 
@@ -19,7 +21,7 @@
 ## 环境要求
 
 - Node.js 18+
-- macOS 或 Windows
+- macOS、Windows 或 Linux
 
 本项目使用：
 

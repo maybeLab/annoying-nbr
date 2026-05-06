@@ -5,3 +5,14 @@ package-lock.json
 yarn.lock
 .DS_Store
 *.log
+*.aac
+*.aif
+*.aiff
+*.flac
+*.m4a
+*.mp3
+*.ogg
+*.opus
+*.wav
+*.webm
+*.wma
