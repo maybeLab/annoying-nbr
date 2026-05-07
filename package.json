@@ -32,7 +32,7 @@
     "electron-builder": "^24.13.3"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=24"
   },
   "build": {
     "appId": "com.annoying.nbr",

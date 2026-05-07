@@ -20,7 +20,7 @@
 
 ## 环境要求
 
-- Node.js 18+
+- Node.js 24 LTS
 - macOS、Windows 或 Linux
 
 本项目使用：
