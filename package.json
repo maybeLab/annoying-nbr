@@ -1,6 +1,6 @@
 {
   "name": "annoying-nbr",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Cross-platform desktop audio loop player with output device selection.",
   "main": "src/main.js",
   "scripts": {

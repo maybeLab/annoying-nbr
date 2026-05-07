@@ -16,6 +16,7 @@ const state = {
   currentFileIndex: 0,
   progressTimer: null,
   nextLoopTimer: null,
+  nextLoopAt: 0,
   startedAt: 0,
   durationSeconds: DEFAULT_DURATION_SECONDS,
   intervalSeconds: DEFAULT_INTERVAL_SECONDS,
@@ -128,8 +129,13 @@ function bindEvents() {
 
   elements.audio.addEventListener('ended', () => {
     if (state.isPlaying) {
+      updateCurrentFileProgress(100);
       scheduleNextLoop();
     }
+  });
+
+  elements.audio.addEventListener('timeupdate', () => {
+    updateCurrentFileProgress();
   });
 
   elements.audio.addEventListener('loadedmetadata', applyPlaybackSettings);
@@ -375,6 +381,8 @@ async function applySink() {
 function tick() {
   const elapsed = getElapsedSeconds();
   updateTimeText(elapsed);
+  updateCurrentFileProgress();
+  updateNextLoopCountdown();
 
   const ratio = Math.min(elapsed / state.durationSeconds, 1);
   elements.progressBar.style.width = `${ratio * 100}%`;
@@ -398,7 +406,8 @@ function scheduleNextLoop() {
     return;
   }
 
-  setStatus(`等待 ${intervalSeconds}s 后继续播放`);
+  state.nextLoopAt = Date.now() + intervalSeconds * 1000;
+  updateNextLoopCountdown();
   state.nextLoopTimer = window.setTimeout(playNextLoop, intervalSeconds * 1000);
 }
 
@@ -408,12 +417,14 @@ function playNextLoop() {
     return;
   }
 
+  state.nextLoopAt = 0;
   state.currentFileIndex = getNextFileIndex();
   state.currentFile = state.selectedFiles[state.currentFileIndex];
   elements.audio.src = state.currentFile.url;
   elements.audio.currentTime = 0;
   applyPlaybackSettings();
   markCurrentFile();
+  updateCurrentFileProgress(0);
   updateSelectedFileSummary();
   setStatus(`正在播放 ${state.currentFile.relativePath}`);
   elements.audio.play().catch((error) => stopPlayback(`播放失败: ${error.message}`));
@@ -431,6 +442,7 @@ function stopPlayback(message) {
     window.clearTimeout(state.nextLoopTimer);
     state.nextLoopTimer = null;
   }
+  state.nextLoopAt = 0;
 
   elements.audio.pause();
   elements.audio.currentTime = 0;
@@ -439,6 +451,7 @@ function stopPlayback(message) {
   elements.progressBar.style.width = '0%';
   document.querySelectorAll('.file-item.is-current').forEach((item) => {
     item.classList.remove('is-current');
+    item.style.removeProperty('--play-progress');
   });
   state.currentFile = null;
   updateTimeText(0);
@@ -468,6 +481,7 @@ function getRandomFileIndex() {
 function markCurrentFile() {
   document.querySelectorAll('.file-item.is-current').forEach((item) => {
     item.classList.remove('is-current');
+    item.style.removeProperty('--play-progress');
   });
 
   if (!state.currentFile) return;
@@ -476,7 +490,30 @@ function markCurrentFile() {
   const currentButton = elements.fileList.querySelectorAll('.file-item')[currentIndex];
   if (currentButton) {
     currentButton.classList.add('is-current');
+    currentButton.style.setProperty('--play-progress', '0%');
   }
+}
+
+function updateCurrentFileProgress(forcedPercent) {
+  if (!state.currentFile) return;
+
+  const currentIndex = state.files.findIndex((file) => file.path === state.currentFile.path);
+  const currentButton = elements.fileList.querySelectorAll('.file-item')[currentIndex];
+  if (!currentButton) return;
+
+  const percent =
+    typeof forcedPercent === 'number'
+      ? forcedPercent
+      : getCurrentAudioProgressPercent();
+  currentButton.style.setProperty('--play-progress', `${percent}%`);
+}
+
+function getCurrentAudioProgressPercent() {
+  if (!Number.isFinite(elements.audio.duration) || elements.audio.duration <= 0) {
+    return 0;
+  }
+
+  return Math.min(Math.max((elements.audio.currentTime / elements.audio.duration) * 100, 0), 100);
 }
 
 function updateSelectedFileSummary() {
@@ -516,6 +553,13 @@ function getNextIntervalSeconds() {
     Math.floor(Math.random() * (RANDOM_INTERVAL_RANGE_SECONDS * 2 + 1)) -
     RANDOM_INTERVAL_RANGE_SECONDS;
   return Math.max(0, baseInterval + offset);
+}
+
+function updateNextLoopCountdown() {
+  if (!state.isPlaying || !state.nextLoopAt) return;
+
+  const remainingSeconds = Math.max(0, Math.ceil((state.nextLoopAt - Date.now()) / 1000));
+  setStatus(`等待 ${remainingSeconds}s 后继续播放`);
 }
 
 function getElapsedSeconds() {

@@ -1,6 +1,6 @@
 'use strict';
 
-const { app, BrowserWindow, dialog, ipcMain, nativeImage } = require('electron');
+const { app, BrowserWindow, Menu, dialog, ipcMain, nativeImage } = require('electron');
 const fs = require('node:fs/promises');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
@@ -115,6 +115,7 @@ async function createWindow() {
     minHeight: 540,
     title: 'Annoying NBR',
     icon: getIconPath(),
+    autoHideMenuBar: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -122,6 +123,9 @@ async function createWindow() {
       sandbox: false
     }
   });
+
+  mainWindow.setMenuBarVisibility(false);
+  Menu.setApplicationMenu(null);
 
   mainWindow.on('close', (event) => {
     if (closingAfterConfigSave || mainWindow.webContents.isDestroyed()) {

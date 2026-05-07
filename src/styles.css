@@ -170,6 +170,7 @@ input {
 }
 
 .file-item {
+  --play-progress: 0%;
   border-color: transparent;
   border-radius: 6px;
   display: block;
@@ -186,6 +187,14 @@ input {
 }
 
 .file-item.is-current {
+  background:
+    linear-gradient(
+      90deg,
+      #9bd3dc 0%,
+      #9bd3dc var(--play-progress),
+      #dceef2 var(--play-progress),
+      #dceef2 100%
+    );
   border-color: #203040;
   box-shadow: inset 3px 0 0 #203040;
 }
