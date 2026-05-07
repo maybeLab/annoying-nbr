@@ -89,6 +89,17 @@ pnpm run pack
 
 打包产物输出到 `dist/`。macOS 目标包含 `dmg` 和 `zip`，Windows 目标包含 `nsis` 安装包和 `portable` 版本，Linux 目标包含 `AppImage` 和 `deb`。跨平台打包可能需要当前系统具备对应平台打包工具链；例如在 macOS 上生成 Windows 或 Linux 安装包时，`electron-builder` 可能需要下载额外工具。
 
+## 自动发布
+
+推送 `v*` tag 后，GitHub Actions 会自动在 macOS、Windows 和 Linux runner 上构建全平台安装包，并发布到对应 tag 的 GitHub Release。
+
+```bash
+git tag -a v1.0.1 -m "v1.0.1"
+git push origin v1.0.1
+```
+
+也可以在 GitHub Actions 页面手动运行 `Release` workflow，并输入要发布的 tag。
+
 ## 配置保存
 
 应用会保存上次使用的目录、扬声器、已选音频文件、循环播放总时长、循环间隔、随机间隔开关、随机循环播放开关、音量和倍速。下次启动时会自动恢复这些配置。
