@@ -211,6 +211,37 @@ input {
   padding: 24px;
 }
 
+.player-tabs {
+  background: #eef2f5;
+  border: 1px solid #d9e0e7;
+  border-radius: 8px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2px;
+  padding: 3px;
+}
+
+.player-tabs button {
+  border-color: transparent;
+  border-radius: 5px;
+  min-height: 32px;
+}
+
+.player-tabs button.is-selected {
+  background: #203040;
+  color: #ffffff;
+}
+
+.tab-panel {
+  align-content: start;
+  display: grid;
+  gap: 18px;
+}
+
+.tab-panel[hidden] {
+  display: none;
+}
+
 .now-playing {
   display: grid;
   gap: 8px;
@@ -313,4 +344,111 @@ output {
   background: #203040;
   border-color: #203040;
   color: #ffffff;
+}
+
+.status-history-header {
+  align-items: center;
+  border-bottom: 1px solid #e3e8ee;
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 12px;
+}
+
+.status-history-header h2 {
+  font-size: 16px;
+  margin: 0;
+}
+
+.status-history-title {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+}
+
+.status-history-actions {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+}
+
+.text-button {
+  background: transparent;
+  border-color: transparent;
+  color: #2e7d8b;
+  min-height: auto;
+  padding: 0;
+}
+
+.text-button:hover:not(:disabled) {
+  border-color: transparent;
+  color: #203040;
+  text-decoration: underline;
+}
+
+.icon-button {
+  align-items: center;
+  background: transparent;
+  border-color: transparent;
+  display: inline-flex;
+  height: 30px;
+  justify-content: center;
+  min-height: 30px;
+  padding: 0;
+  width: 30px;
+}
+
+.icon-button svg {
+  fill: none;
+  height: 18px;
+  stroke: #586777;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+  width: 18px;
+}
+
+.icon-button:hover:not(:disabled) {
+  background: #eef2f5;
+  border-color: #d9e0e7;
+}
+
+.icon-button:hover:not(:disabled) svg {
+  stroke: #203040;
+}
+
+.status-history-list {
+  display: grid;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  max-height: 320px;
+  overflow: auto;
+  padding: 0;
+}
+
+.status-history-list li {
+  align-items: start;
+  background: #f7f9fb;
+  border: 1px solid #e3e8ee;
+  border-radius: 6px;
+  display: grid;
+  grid-template-columns: 84px minmax(0, 1fr);
+  gap: 12px;
+  padding: 10px 12px;
+}
+
+.status-history-list time {
+  color: #586777;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.status-history-list span {
+  overflow-wrap: anywhere;
+}
+
+.status-history-empty {
+  color: #687786;
+  margin: 0;
 }

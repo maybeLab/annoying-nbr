@@ -24,6 +24,7 @@ const state = {
   playbackRate: DEFAULT_PLAYBACK_RATE,
   randomizeInterval: DEFAULT_RANDOMIZE_INTERVAL,
   randomizePlayback: DEFAULT_RANDOMIZE_PLAYBACK,
+  speakerRecovery: null,
   isPlaying: false
 };
 
@@ -32,11 +33,13 @@ let saveConfigTimer = null;
 const elements = {
   audio: document.getElementById('audio'),
   chooseDirButton: document.getElementById('chooseDirButton'),
+  clearStatusHistoryButton: document.getElementById('clearStatusHistoryButton'),
   deviceSelect: document.getElementById('deviceSelect'),
   durationInput: document.getElementById('durationInput'),
   fileCount: document.getElementById('fileCount'),
   fileList: document.getElementById('fileList'),
   intervalInput: document.getElementById('intervalInput'),
+  openConfigFolderButton: document.getElementById('openConfigFolderButton'),
   playButton: document.getElementById('playButton'),
   progressBar: document.getElementById('progressBar'),
   randomIntervalInput: document.getElementById('randomIntervalInput'),
@@ -45,8 +48,12 @@ const elements = {
   rescanButton: document.getElementById('rescanButton'),
   scanRoot: document.getElementById('scanRoot'),
   selectedFileName: document.getElementById('selectedFileName'),
+  statusHistoryEmpty: document.getElementById('statusHistoryEmpty'),
+  statusHistoryList: document.getElementById('statusHistoryList'),
   statusText: document.getElementById('statusText'),
   stopButton: document.getElementById('stopButton'),
+  tabButtons: Array.from(document.querySelectorAll('[data-tab]')),
+  tabPanels: Array.from(document.querySelectorAll('[data-tab-panel]')),
   timeText: document.getElementById('timeText'),
   volumeInput: document.getElementById('volumeInput'),
   volumeValue: document.getElementById('volumeValue')
@@ -82,8 +89,26 @@ function bindEvents() {
   });
 
   elements.playButton.addEventListener('click', playSelectedFile);
-  elements.stopButton.addEventListener('click', () => stopPlayback('已停止'));
+  elements.stopButton.addEventListener('click', () => {
+    cancelSpeakerRecovery();
+    stopPlayback('已停止');
+  });
+  elements.openConfigFolderButton.addEventListener('click', async () => {
+    try {
+      await window.audioApp.openConfigFolder();
+      setStatus('已打开配置文件夹');
+    } catch (error) {
+      setStatus(`打开配置文件夹失败: ${error.message}`);
+    }
+  });
+  elements.clearStatusHistoryButton.addEventListener('click', () => {
+    clearStatusHistory();
+    setStatus('状态记录已清空', { record: false });
+  });
+
   elements.deviceSelect.addEventListener('change', async () => {
+    cancelSpeakerRecovery();
+
     try {
       await applySink();
       if (state.isPlaying) {
@@ -125,6 +150,10 @@ function bindEvents() {
     if (!button) return;
 
     setPlaybackRate(Number.parseFloat(button.dataset.rate), { save: true });
+  });
+
+  elements.tabButtons.forEach((button) => {
+    button.addEventListener('click', () => selectTab(button.dataset.tab));
   });
 
   elements.audio.addEventListener('ended', () => {
@@ -213,24 +242,125 @@ async function loadDevices(savedSinkId = '', options = {}) {
 }
 
 async function refreshDevices() {
+  if (state.speakerRecovery) {
+    const recovery = state.speakerRecovery;
+    const hasRecoveredDevice = await loadDevices(recovery.sinkId, {
+      keepMissingDevice: true
+    });
+
+    if (state.speakerRecovery !== recovery) {
+      return;
+    }
+
+    if (hasRecoveredDevice) {
+      await resumePlaybackAfterSpeakerReconnect(recovery);
+      return;
+    }
+
+    return;
+  }
+
   const previousSinkId = elements.deviceSelect.value;
   const hasPreviousDevice = await loadDevices(previousSinkId, { keepMissingDevice: false });
 
   if (previousSinkId && !hasPreviousDevice) {
     if (state.isPlaying) {
-      stopPlayback('当前扬声器已断开，已停止循环播放');
-      elements.deviceSelect.value = '';
-      await saveConfigNow();
+      const playbackSnapshot = createPlaybackSnapshot();
+      stopPlayback('当前扬声器已断开，已停止循环播放', {
+        cancelSpeakerRecovery: false
+      });
+      keepMissingDeviceSelection(previousSinkId);
+      state.speakerRecovery = {
+        playbackSnapshot,
+        sinkId: previousSinkId
+      };
       return;
     }
 
-    setStatus('上次选择的扬声器已断开，已切换到默认输出设备');
-    await applySink();
+    keepMissingDeviceSelection(previousSinkId);
+    setStatus('上次选择的扬声器已断开，等待重新连接');
     await saveConfigNow();
     return;
   }
 
   setStatus('扬声器列表已更新');
+}
+
+function createPlaybackSnapshot() {
+  return {
+    currentFile: state.currentFile,
+    currentFileIndex: state.currentFileIndex,
+    currentTime: Number.isFinite(elements.audio.currentTime) ? elements.audio.currentTime : 0,
+    durationSeconds: getDurationSeconds(),
+    elapsedSeconds: getElapsedSeconds(),
+    intervalSeconds: getIntervalSeconds()
+  };
+}
+
+function keepMissingDeviceSelection(sinkId) {
+  if (!sinkId) return;
+
+  const hasOption = Array.from(elements.deviceSelect.options).some(
+    (option) => option.value === sinkId
+  );
+  if (!hasOption) {
+    elements.deviceSelect.appendChild(createOption(sinkId, '上次选择的扬声器'));
+  }
+  elements.deviceSelect.value = sinkId;
+}
+
+async function resumePlaybackAfterSpeakerReconnect(recovery) {
+  if (!recovery) return;
+
+  const snapshot = recovery.playbackSnapshot;
+  state.speakerRecovery = null;
+
+  if (state.selectedFiles.length === 0 || !snapshot.currentFile) {
+    setStatus('扬声器已重新连接，但没有可恢复的音频');
+    return;
+  }
+
+  const selectedIndex = state.selectedFiles.findIndex(
+    (file) => file.path === snapshot.currentFile.path
+  );
+  state.currentFileIndex =
+    selectedIndex >= 0
+      ? selectedIndex
+      : Math.min(snapshot.currentFileIndex, state.selectedFiles.length - 1);
+  state.currentFile = state.selectedFiles[state.currentFileIndex];
+  state.durationSeconds = snapshot.durationSeconds;
+  state.intervalSeconds = snapshot.intervalSeconds;
+  state.startedAt = Date.now() - snapshot.elapsedSeconds * 1000;
+  state.isPlaying = true;
+  state.nextLoopAt = 0;
+
+  try {
+    await applySink();
+    applyPlaybackSettings();
+    elements.audio.loop = false;
+    elements.audio.src = state.currentFile.url;
+    try {
+      elements.audio.currentTime = snapshot.currentTime;
+    } catch {
+      elements.audio.currentTime = 0;
+    }
+    elements.stopButton.disabled = false;
+    elements.playButton.disabled = true;
+    markCurrentFile();
+    updateSelectedFileSummary();
+    setStatus(`扬声器已重新连接，继续播放 ${state.currentFile.relativePath}`);
+
+    await elements.audio.play();
+    tick();
+    state.progressTimer = window.setInterval(tick, 250);
+    scheduleConfigSave();
+  } catch (error) {
+    stopPlayback(`恢复播放失败: ${error.message}`);
+  }
+}
+
+function cancelSpeakerRecovery() {
+  state.speakerRecovery = null;
 }
 
 function createOption(value, label) {
@@ -304,6 +434,7 @@ function getSavedSelectedFilePaths(config) {
 
 function toggleFileSelection(file, button) {
   if (state.isPlaying) return;
+  cancelSpeakerRecovery();
 
   if (state.selectedFiles.some((selectedFile) => selectedFile.path === file.path)) {
     deselectFile(file, button);
@@ -340,6 +471,7 @@ function deselectFile(file, button) {
 
 async function playSelectedFile() {
   if (state.selectedFiles.length === 0) return;
+  cancelSpeakerRecovery();
 
   try {
     state.durationSeconds = getDurationSeconds();
@@ -430,7 +562,11 @@ function playNextLoop() {
   elements.audio.play().catch((error) => stopPlayback(`播放失败: ${error.message}`));
 }
 
-function stopPlayback(message) {
+function stopPlayback(message, options = {}) {
+  if (options.cancelSpeakerRecovery !== false) {
+    cancelSpeakerRecovery();
+  }
+
   state.isPlaying = false;
 
   if (state.progressTimer) {
@@ -559,7 +695,7 @@ function updateNextLoopCountdown() {
   if (!state.isPlaying || !state.nextLoopAt) return;
 
   const remainingSeconds = Math.max(0, Math.ceil((state.nextLoopAt - Date.now()) / 1000));
-  setStatus(`等待 ${remainingSeconds}s 后继续播放`);
+  setStatus(`等待 ${remainingSeconds}s 后继续播放`, { record: false });
 }
 
 function getElapsedSeconds() {
@@ -609,8 +745,54 @@ function updateTimeText(elapsed) {
   elements.timeText.textContent = `${Math.floor(elapsed)}s / ${getDurationSeconds()}s`;
 }
 
-function setStatus(message) {
+function setStatus(message, options = {}) {
   elements.statusText.textContent = message;
+  if (options.record === false) return;
+
+  appendStatusHistory(message);
+}
+
+function clearStatusHistory() {
+  elements.statusHistoryList.replaceChildren();
+  elements.statusHistoryEmpty.hidden = false;
+}
+
+function appendStatusHistory(message) {
+  const timestamp = new Date();
+  const item = document.createElement('li');
+  const time = document.createElement('time');
+  const text = document.createElement('span');
+
+  time.dateTime = timestamp.toISOString();
+  time.textContent = formatStatusTime(timestamp);
+  text.textContent = message;
+
+  item.append(time, text);
+  elements.statusHistoryList.prepend(item);
+  elements.statusHistoryEmpty.hidden = true;
+}
+
+function formatStatusTime(date) {
+  return new Intl.DateTimeFormat('zh-CN', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  }).format(date);
+}
+
+function selectTab(tabName) {
+  elements.tabButtons.forEach((button) => {
+    const isSelected = button.dataset.tab === tabName;
+    button.classList.toggle('is-selected', isSelected);
+    button.setAttribute('aria-selected', String(isSelected));
+  });
+
+  elements.tabPanels.forEach((panel) => {
+    const isSelected = panel.dataset.tabPanel === tabName;
+    panel.classList.toggle('is-selected', isSelected);
+    panel.hidden = !isSelected;
+  });
 }
 
 function toPositiveNumber(value, fallback) {

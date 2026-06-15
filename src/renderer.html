@@ -60,48 +60,81 @@
         </aside>
 
         <section class="player-panel">
-          <div class="now-playing">
-            <span>当前选择</span>
-            <strong id="selectedFileName">未选择音频</strong>
+          <div class="player-tabs" role="tablist" aria-label="播放器面板">
+            <button id="playerTabButton" class="is-selected" type="button" role="tab" aria-selected="true" aria-controls="playerTabPanel" data-tab="player">
+              播放
+            </button>
+            <button id="statusTabButton" type="button" role="tab" aria-selected="false" aria-controls="statusTabPanel" data-tab="status">
+              状态
+            </button>
           </div>
 
-          <audio id="audio"></audio>
+          <section id="playerTabPanel" class="tab-panel is-selected" role="tabpanel" aria-labelledby="playerTabButton" data-tab-panel="player">
+            <div class="now-playing">
+              <span>当前选择</span>
+              <strong id="selectedFileName">未选择音频</strong>
+            </div>
 
-          <div class="playback-controls">
-            <label class="volume-control">
-              <span>音量</span>
-              <div class="range-row">
-                <input id="volumeInput" type="range" min="0" max="100" step="1" value="100" />
-                <output id="volumeValue">100%</output>
-              </div>
-            </label>
+            <audio id="audio"></audio>
 
-            <div class="rate-control">
-              <span>倍速</span>
-              <div id="rateButtons" class="rate-buttons">
-                <button type="button" data-rate="0.5">0.5x</button>
-                <button type="button" data-rate="0.75">0.75x</button>
-                <button type="button" data-rate="1">1x</button>
-                <button type="button" data-rate="1.25">1.25x</button>
-                <button type="button" data-rate="1.5">1.5x</button>
-                <button type="button" data-rate="2">2x</button>
+            <div class="playback-controls">
+              <label class="volume-control">
+                <span>音量</span>
+                <div class="range-row">
+                  <input id="volumeInput" type="range" min="0" max="100" step="1" value="100" />
+                  <output id="volumeValue">100%</output>
+                </div>
+              </label>
+
+              <div class="rate-control">
+                <span>倍速</span>
+                <div id="rateButtons" class="rate-buttons">
+                  <button type="button" data-rate="0.5">0.5x</button>
+                  <button type="button" data-rate="0.75">0.75x</button>
+                  <button type="button" data-rate="1">1x</button>
+                  <button type="button" data-rate="1.25">1.25x</button>
+                  <button type="button" data-rate="1.5">1.5x</button>
+                  <button type="button" data-rate="2">2x</button>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div class="progress">
-            <div id="progressBar"></div>
-          </div>
+            <div class="progress">
+              <div id="progressBar"></div>
+            </div>
 
-          <div class="status-row">
-            <span id="statusText">请选择音频后开始播放</span>
-            <span id="timeText">0s / 7200s</span>
-          </div>
+            <div class="status-row">
+              <span id="statusText">请选择音频后开始播放</span>
+              <span id="timeText">0s / 7200s</span>
+            </div>
 
-          <div class="player-actions">
-            <button id="playButton" type="button" disabled>开始循环播放</button>
-            <button id="stopButton" type="button" disabled>停止</button>
-          </div>
+            <div class="player-actions">
+              <button id="playButton" type="button" disabled>开始循环播放</button>
+              <button id="stopButton" type="button" disabled>停止</button>
+            </div>
+          </section>
+
+          <section id="statusTabPanel" class="tab-panel" role="tabpanel" aria-labelledby="statusTabButton" data-tab-panel="status" hidden>
+            <div class="status-history-header">
+              <div class="status-history-title">
+                <h2>状态记录</h2>
+                <button id="clearStatusHistoryButton" class="icon-button" type="button" title="清空状态记录" aria-label="清空状态记录">
+                  <svg aria-hidden="true" viewBox="0 0 24 24">
+                    <path d="M3 6h18" />
+                    <path d="M8 6V4h8v2" />
+                    <path d="M6 6l1 15h10l1-15" />
+                    <path d="M10 11v6" />
+                    <path d="M14 11v6" />
+                  </svg>
+                </button>
+              </div>
+              <div class="status-history-actions">
+                <button id="openConfigFolderButton" class="text-button" type="button">打开配置文件夹</button>
+              </div>
+            </div>
+            <ol id="statusHistoryList" class="status-history-list"></ol>
+            <p id="statusHistoryEmpty" class="status-history-empty">暂无状态记录</p>
+          </section>
         </section>
       </section>
     </main>

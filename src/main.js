@@ -1,6 +1,6 @@
 'use strict';
 
-const { app, BrowserWindow, Menu, dialog, ipcMain, nativeImage } = require('electron');
+const { app, BrowserWindow, Menu, dialog, ipcMain, nativeImage, shell } = require('electron');
 const fs = require('node:fs/promises');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
@@ -153,6 +153,10 @@ function getConfigPath() {
   return path.join(app.getPath('userData'), 'config.json');
 }
 
+function getConfigDir() {
+  return path.dirname(getConfigPath());
+}
+
 async function loadConfig() {
   const raw = await fs.readFile(getConfigPath(), 'utf8').catch(() => null);
   if (!raw) return { ...DEFAULT_CONFIG };
@@ -228,6 +232,14 @@ async function saveConfig(config) {
   await fs.writeFile(getConfigPath(), JSON.stringify(currentConfig, null, 2));
 }
 
+async function openConfigFolder() {
+  await fs.mkdir(getConfigDir(), { recursive: true });
+  const errorMessage = await shell.openPath(getConfigDir());
+  if (errorMessage) {
+    throw new Error(errorMessage);
+  }
+}
+
 async function listAudioFiles(rootDir) {
   const files = [];
   await walk(rootDir, files);
@@ -299,6 +311,11 @@ ipcMain.handle('audio:rescan', async () => {
 ipcMain.handle('audio:save-config', async (_event, config) => {
   await saveConfig(config);
   return currentConfig;
+});
+
+ipcMain.handle('audio:open-config-folder', async () => {
+  await openConfigFolder();
+  return true;
 });
 
 app.whenReady().then(async () => {
