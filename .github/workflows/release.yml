@@ -24,20 +24,20 @@ jobs:
         include:
           - name: macOS
             os: macos-latest
-            script: dist:mac
+            target: mac
             artifact: macos
             files: |
               dist/*.dmg
               dist/*-mac.zip
           - name: Windows
             os: windows-latest
-            script: dist:win
+            target: win
             artifact: windows
             files: |
               dist/*.exe
           - name: Linux
             os: ubuntu-latest
-            script: dist:linux
+            target: linux
             artifact: linux
             files: |
               dist/*.AppImage
@@ -73,7 +73,7 @@ jobs:
         run: pnpm check
 
       - name: Build
-        run: pnpm run ${{ matrix.script }} -- --publish never
+        run: pnpm exec electron-builder --${{ matrix.target }} --publish never
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
